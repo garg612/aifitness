@@ -44,6 +44,37 @@ Updated `src/models/user.models.js`:
 
 ## Notes
 
+---
+
+## Workout Route Check
+
+Date: 2026-06-16
+
+I checked the workout route stack and tested it with real data.
+
+### Findings
+
+- `src/routes/workout.routes.js` is wired to protected endpoints: `POST /`, `GET /list`, `GET /history`, `GET /:id`, `PUT /:id`, `DELETE /:id`.
+- The workout service had broken field usage and missing imports, so requests would not work correctly before the fix.
+
+### Verification Performed
+
+- `POST /api/v1/workouts` → `201 Created`
+- `GET /api/v1/workouts/list` → `200 OK` and returned the created workout
+- `GET /api/v1/workouts/:id` → `200 OK` and returned the workout with its exercises
+- `PUT /api/v1/workouts/:id` → `200 OK` and updated the workout
+- `GET /api/v1/workouts/history` → `200 OK` and returned workout history
+- `DELETE /api/v1/workouts/:id` → `200 OK` and removed the workout and its exercises
+
+### Result
+
+✅ Workout routes are now working correctly with test data.
+
+### Notes
+
+- The workout flow stores the workout plus related exercises in MongoDB.
+- The test used a verified user account and a valid bearer token.
+- I also fixed a runtime mismatch in the history handler so it calls the correct service function.
 
 
 # Verify Email Route Check Result
