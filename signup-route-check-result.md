@@ -225,3 +225,47 @@ const verifyEmail=async(token)=>{
 ✅ **Email verification**: User marked as verified in database
 ✅ **Token cleanup**: Verification token deleted after use
 ✅ **Login after verify**: User can now login successfully with access token
+
+---
+
+## Meal Route Check
+
+Date: 2026-06-16
+
+I checked all meal routes with comprehensive endpoint testing using real data.
+
+### Issues Found and Fixed
+
+1. **Service Parameters Mismatch**: createMeal expected `mealPlanId, mealItems` but controller passed `title, description, mealType, items`
+   - **Fix**: Updated service to destructure `{userId, title, description, mealType, items}` matching request schema
+2. **Undefined Variable**: consumeMeal referenced undefined `totalCalories`
+   - **Fix**: Retrieve totalCalories from fetched MealPlan record
+3. **Field Name Consistency**: Service used `totalcalories` (lowercase) but model uses `totalCalories` (camelCase)
+   - **Fix**: Updated all references to match model definition
+4. **Route Parameter Mismatch**: Controllers passed `req.params.id` but routes defined as `/:mealId`
+   - **Fix**: Updated all controllers to use `req.params.mealId`
+5. **Route Order Conflict**: GET `/history` defined after `/:mealId`, causing Express to treat "history" as a meal ID
+   - **Fix**: Moved `/history` route before `/:mealId` to ensure correct matching
+
+### Verification Performed
+
+- `POST /api/v1/meals` → `201 Created` with totalCalories calculated from items
+- `GET /api/v1/meals` → `200 OK`, returns all user's meals
+- `GET /api/v1/meals/:mealId` → `200 OK`, returns meal with items array
+- `PUT /api/v1/meals/:mealId` → `200 OK`, updates meal fields
+- `POST /api/v1/meals/:mealId/consume` → `200 OK`, logs meal consumption
+- `GET /api/v1/meals/history` → `200 OK`, returns meal consumption logs
+- `DELETE /api/v1/meals/:mealId` → `200 OK`, removes meal and items
+
+### Result
+
+✅ All meal routes are now working correctly with test data.
+
+### Key Features Validated
+
+- Meals are created with title, description, mealType (breakfast/lunch/dinner/snack)
+- Meal items array stores food details (foodName, quantity, calories, macros)
+- Total calories calculated automatically from items
+- Consumption tracked via MealLog with timestamp
+- Proper authorization (JWT verification required)
+- Cleanup verified - meals and items deleted on route removal

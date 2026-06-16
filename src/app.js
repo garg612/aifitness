@@ -26,7 +26,7 @@ const app=express();
     import profileRoutes from "./routes/profile.routes.js";
     import bmiRoutes from "./routes/bmi.routes.js";
     import workoutRoutes from "./routes/workout.routes.js";
-    // import mealRoutes from "./routes/meal.routes.js";
+    import mealRoutes from "./routes/meal.routes.js";
     // import aiRoutes from "./routes/ai.routes.js";
 
 
@@ -35,7 +35,7 @@ const app=express();
     app.use("/api/v1/profile", profileRoutes);
     app.use("/api/v1/bmi", bmiRoutes);
     app.use("/api/v1/workouts", workoutRoutes);
-    // app.use("/api/v1/meals", mealRoutes);
+    app.use("/api/v1/meals", mealRoutes);
     // app.use("/api/v1/ai", aiRoutes);
 
 
