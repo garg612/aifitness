@@ -35,6 +35,7 @@ const signup = async ({ fullName, email, password }) => {
     tokenHash: hashtoken,
     expiresAt: new Date(Date.now() +  15 * 60 * 1000), // 15 minutes
   });
+  console.log("Email verification token created:", hashtoken);
 
   const verifyurl=`${process.env.FRONTEND_URL}/verify-email/${rawtoken}`;
 
