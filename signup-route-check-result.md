@@ -269,3 +269,88 @@ I checked all meal routes with comprehensive endpoint testing using real data.
 - Consumption tracked via MealLog with timestamp
 - Proper authorization (JWT verification required)
 - Cleanup verified - meals and items deleted on route removal
+
+---
+
+## AI Workout Route Check
+
+Date: 2026-06-17
+
+Route tested: `POST /api/v1/ai/generate`
+
+### Issues Found and Fixed
+
+1. Controller used `req.userId` but auth middleware sets `req.user`
+  - Fix: changed to `req.user._id` in AI workout controller
+2. AI response difficulty could be `Beginner/Intermediate/Advanced` but workout schema requires lowercase enum values
+  - Fix: normalized difficulty to lowercase before saving
+3. Workout schema requires `duration` but AI service was not sending it
+  - Fix: added computed duration from weekly plan active days (`activeDays * 45`, fallback 45)
+
+### Verification Performed
+
+Integration test with a real authenticated user, profile, and BMI:
+
+- Created test user and marked verified
+- Inserted `UserProfile` and latest `BMIRecord`
+- Called `POST /api/v1/ai/generate` with bearer token
+- Confirmed DB persistence by counting AI-generated workouts before and after request
+
+### Test Result
+
+✅ Endpoint response: `201 Created`
+✅ Message: `AI workout plan generated and saved successfully.`
+✅ Database persistence: `dbBefore=0`, `dbAfter=1`, `persisted=true`
+✅ Saved document fields verified:
+- `source = ai-generated`
+- `difficulty = intermediate` (normalized and schema-valid)
+- `weeklyPlan` length = 7 days
+
+### Conclusion
+
+The AI workout route is now working properly. It generates a workout plan and stores it in MongoDB successfully.
+
+---
+
+## AI Meal Route Check
+
+Date: 2026-06-17
+
+Route tested: `POST /api/v1/ai/meal-generate`
+
+### Issues Found and Fixed
+
+1. Route file was importing the workout controller instead of the meal controller
+  - Fix: wired `aimealgenerate.routes.js` to `generateAIMeal`
+2. Route path was colliding with the workout generation endpoint
+  - Fix: exposed the meal generator as `/meal-generate` under `/api/v1/ai`
+3. Meal generation depended on `profile.dietPreference`, but the profile update validation did not allow that field
+  - Fix: added `dietPreference` to profile validation so it can be stored on the profile document
+4. MealPlan schema could not store a full-day AI plan cleanly
+  - Fix: added `dailyCalorieTarget`, `meals`, and `full_day` support, and saved valid required fields
+
+### Verification Performed
+
+Integration test with a real authenticated user, profile, and BMI:
+
+- Created test user and marked verified
+- Inserted `UserProfile` with `dietPreference: Vegetarian`
+- Inserted latest `BMIRecord`
+- Called `POST /api/v1/ai/meal-generate` with bearer token
+- Confirmed DB persistence by counting AI-generated meal plans before and after request
+
+### Test Result
+
+✅ Endpoint response: `201 Created`
+✅ Message: `AI meal plan generated and saved successfully.`
+✅ Database persistence: `dbBefore=0`, `dbAfter=1`, `persisted=true`
+✅ Saved document fields verified:
+- `title = AI Meal Plan`
+- `mealType = full_day`
+- `dietPreference = Vegetarian`
+- `tdee = 2608`
+- `meals` length = 4
+
+### Conclusion
+
+The AI meal-generation route is now working properly. It generates a meal plan and stores it in MongoDB successfully.

@@ -49,4 +49,15 @@ const getworkouthistory=asyncHandler(async(req,res)=>{
     return res.status(200).json(new ApiResponse(200,"Workout history retrieved successfully",history));
 });
 
-export { createWorkout, listWorkouts, getWorkout, updateWorkout, deleteWorkout, getworkouthistory };
+const logWorkout=asyncHandler(async(req,res)=>{
+    const { duration, caloriesBurned } = req.body;
+    const log=await workoutService.logWorkout({
+        userId: req.user._id,
+        workoutId: req.params.id,
+        duration,
+        caloriesBurned
+    });
+    return res.status(201).json(new ApiResponse(201,"Workout logged successfully",log));
+});
+
+export { createWorkout, listWorkouts, getWorkout, updateWorkout, deleteWorkout, getworkouthistory, logWorkout };

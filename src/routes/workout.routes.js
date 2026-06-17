@@ -1,5 +1,5 @@
 import {Router} from "express";
-import { createWorkout, listWorkouts, getWorkout, updateWorkout, deleteWorkout, getworkouthistory }from "../controllers/workout.controllers.js";
+import { createWorkout, listWorkouts, getWorkout, updateWorkout, deleteWorkout, getworkouthistory, logWorkout }from "../controllers/workout.controllers.js";
 import validate from "../middlewares/validate.middlewares.js";
 import verifyJWT from "../middlewares/verifyJWT.js";
 import { createWorkoutSchema } from "../validation/workout.validation.js";
@@ -12,5 +12,6 @@ router.get("/history",verifyJWT,getworkouthistory);
 router.get("/:id",verifyJWT,getWorkout);
 router.put("/:id",verifyJWT,updateWorkout);
 router.delete("/:id",verifyJWT,deleteWorkout);
+router.post("/:id/log",verifyJWT,logWorkout);
 
 export default router;

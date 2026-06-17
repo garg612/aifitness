@@ -104,4 +104,16 @@ const verifyEmail=asyncHandler(async(req,res)=>{
   );
 });
 
-export { signup, login, verifyEmail, logout, refreshToken, logoutAllDevices, getCurrentUser };
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const result = await authService.requestPasswordReset(email);
+  return res.status(200).json(new ApiResponse(200, result.message));
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token, password } = req.body;
+  const result = await authService.resetPassword(token, password);
+  return res.status(200).json(new ApiResponse(200, result.message));
+});
+
+export { signup, login, verifyEmail, logout, refreshToken, logoutAllDevices, getCurrentUser, forgotPassword, resetPassword };

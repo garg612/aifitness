@@ -14,6 +14,13 @@ const getProfile = async (userId) => {
 };
 
 const updateProfile = async (userId, data) => {
+  const currentProfile = await UserProfile.findOne({ user: userId });
+  if (data.weight && currentProfile && !currentProfile.startWeight) {
+    data.startWeight = data.weight;
+  } else if (data.weight && !currentProfile) {
+    data.startWeight = data.weight;
+  }
+
   const profile =
     await UserProfile.findOneAndUpdate(
       {
@@ -23,6 +30,7 @@ const updateProfile = async (userId, data) => {
       {
         new: true,
         runValidators: true,
+        upsert: true,
       }
     );
 

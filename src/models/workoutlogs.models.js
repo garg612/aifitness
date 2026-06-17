@@ -20,6 +20,12 @@ const workoutLogSchema = new mongoose.Schema(
       default: true,
     },
 
+    status: {
+      type: String,
+      enum: ["completed", "missed"],
+      default: "completed",
+    },
+
     completedAt: {
       type: Date,
       default: Date.now,

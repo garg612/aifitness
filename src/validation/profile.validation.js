@@ -16,6 +16,13 @@ export const updateProfileSchema = z.object({
 
   targetWeight: z.number().positive().optional(),
 
+  dietPreference: z.enum([
+    "Vegetarian",
+    "Non-Vegetarian",
+    "Vegan",
+    "Eggetarian",
+  ]).optional(),
+
   goal: z.enum(GOALS).optional(),
 
   activityLevel: z.enum(ACTIVITY_LEVELS).optional(),

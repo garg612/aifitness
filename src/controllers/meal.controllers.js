@@ -48,7 +48,8 @@ const deleteMealcontroller=asyncHandler(async(req,res)=>{
 });
 
 const consumeMealcontroller=asyncHandler(async(req,res)=>{
-    const meal=await consumeMeal(req.user._id,req.params.mealId);
+    const { day, mealType } = req.body;
+    const meal=await consumeMeal(req.user._id,req.params.mealId, { day, mealType });
 
     return res.status(200).json(new ApiResponse(200,"Meal consumed successfully",meal));
 });

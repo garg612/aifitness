@@ -1,6 +1,7 @@
 import ApiError from "../utils/ApiError.js";
 import Workout from "../models/workout.models.js";
 import Exercise from "../models/exercise.models.js";
+import WorkoutLog from "../models/workoutlogs.models.js";
 
 const createWorkout = async ({ userId, title, description, duration, difficulty, exercises }) => {
     const workout = await Workout.create({
@@ -91,8 +92,26 @@ const completeworkout = async ({ userId, workoutId }) => {
 };
 
 const workouthistory = async ({ userId }) => {
+    return await WorkoutLog.find({ user: userId }).sort({ completedAt: -1 }).populate("workout");
+};
 
-    return await Workout.find({ user: userId }).sort({ createdAt: -1 });
+const logWorkout = async ({ userId, workoutId, duration, caloriesBurned }) => {
+    const workout = await Workout.findOne({ _id: workoutId, user: userId });
+    if (!workout) {
+        throw new ApiError(404, "Workout not found");
+    }
+
+    const log = await WorkoutLog.create({
+        user: userId,
+        workout: workoutId,
+        completed: true,
+        status: "completed",
+        duration: duration || workout.duration,
+        caloriesBurned: caloriesBurned || 300,
+        completedAt: new Date()
+    });
+
+    return log;
 };
 
 export {
@@ -103,4 +122,5 @@ export {
     deleteworkout,
     completeworkout,
     workouthistory,
+    logWorkout,
 };

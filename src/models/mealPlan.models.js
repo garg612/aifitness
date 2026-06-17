@@ -29,13 +29,46 @@ const mealPlanSchema = new mongoose.Schema(
         "lunch",
         "dinner",
         "snack",
+        "full_day",
       ],
-      required: true,
+      default: "full_day",
     },
 
     totalCalories: {
       type: Number,
       default: 0,
+    },
+
+    dailyCalorieTarget: {
+      type: Number,
+      default: 0,
+    },
+
+    meals: {
+      type: Array,
+      default: [],
+    },
+
+    weeklyPlan: {
+      type: Array,
+      default: [],
+    },
+
+    dietPreference: {
+        type: String,
+        enum: ["Vegetarian", "Non-Vegetarian", "Vegan", "Eggetarian"],
+    },
+    tdee: {
+        type: Number,
+    },
+    generatedByAI: {
+        type: Boolean,
+        default: false,
+    },
+    source: {
+        type: String,
+        enum: ["manual", "ai-generated"],
+        default: "manual",
     },
   },
   {

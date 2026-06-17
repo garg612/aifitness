@@ -32,6 +32,16 @@ const userProfileSchema = new mongoose.Schema(
       type: Number,
     },
 
+    startWeight: {
+      type: Number,
+    },
+    
+    dietPreference: {
+      type: String,
+      enum: ["Vegetarian", "Non-Vegetarian", "Vegan", "Eggetarian"],
+      default: "Non-Vegetarian",
+    },
+
     goal: {
       type: String,
       enum: [

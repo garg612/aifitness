@@ -1,12 +1,12 @@
 import User from "../models/user.models.js";
 import RefreshToken from "../models/refreshtoken.models.js";
-
+import PasswordResetToken from "../models/PasswordResetToken.models.js";
 import ApiError from "../utils/ApiError.js";
 import { generateAccessToken ,generateRefreshToken,verifyRefreshToken} from "../utils/jwt.js";
 import hashToken from "../utils/hashToken.js";
 import generateRandomToken from "../utils/generateRandomToken.js";
 import EmailVerificationToken from "../models/emailVerificationToken.models.js";
-import {sendemail, emailverificationTemplate } from "../utils/sendEmail.js";
+import {sendemail, emailverificationTemplate, passwordResetTemplate } from "../utils/sendEmail.js";
 
 
 
@@ -135,7 +135,7 @@ const logout = async (refreshToken) => {
   if (!refreshToken) return;
 
   await RefreshToken.deleteOne({
-    tokenHash: hashToken(refreshToken),
+    tokenhash: hashToken(refreshToken),
   });
 };
 
@@ -146,7 +146,7 @@ const refreshToken = async (incomingToken) => {
   const hashedToken = hashToken(incomingToken);
 
   const storedToken = await RefreshToken.findOne({
-    tokenHash: hashedToken,
+    tokenhash: hashedToken,
   });
 
   if (!storedToken) {
@@ -163,7 +163,7 @@ const refreshToken = async (incomingToken) => {
 
   await RefreshToken.create({
     user: decoded.userId,
-    tokenHash: hashToken(newRefreshToken),
+    tokenhash: hashToken(newRefreshToken),
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
 
@@ -181,4 +181,67 @@ const logoutAllDevices = async (userId) => {
 
 
 
-export { signup, login, verifyEmail, logout ,refreshToken,logoutAllDevices};
+const requestPasswordReset = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(404, "User not found with this email");
+  }
+
+  const rawToken = generateRandomToken();
+  const hashedToken = hashToken(rawToken);
+
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+  await PasswordResetToken.deleteMany({ user: user._id });
+
+  await PasswordResetToken.create({
+    user: user._id,
+    tokenHash: hashedToken,
+    expiresAt,
+  });
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
+
+  sendemail({
+    email: user.email,
+    subject: "Password Reset Request",
+    mailgenContent: passwordResetTemplate(user.fullName, resetUrl),
+  }).catch((error) => {
+    console.error("Error sending password reset email:", error);
+  });
+
+  return {
+    success: true,
+    message: "Password reset link has been sent to your email",
+  };
+};
+
+const resetPassword = async (token, newPassword) => {
+  const hashedToken = hashToken(token);
+
+  const resetTokenRecord = await PasswordResetToken.findOne({
+    tokenHash: hashedToken,
+    expiresAt: { $gt: new Date() },
+  });
+
+  if (!resetTokenRecord) {
+    throw new ApiError(400, "Invalid or expired password reset token");
+  }
+
+  const user = await User.findById(resetTokenRecord.user);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  user.passwordHash = newPassword;
+  await user.save();
+
+  await PasswordResetToken.deleteOne({ _id: resetTokenRecord._id });
+
+  return {
+    success: true,
+    message: "Password has been reset successfully. You can now log in.",
+  };
+};
+
+export { signup, login, verifyEmail, logout ,refreshToken,logoutAllDevices, requestPasswordReset, resetPassword};

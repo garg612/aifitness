@@ -27,7 +27,9 @@ const app=express();
     import bmiRoutes from "./routes/bmi.routes.js";
     import workoutRoutes from "./routes/workout.routes.js";
     import mealRoutes from "./routes/meal.routes.js";
-    // import aiRoutes from "./routes/ai.routes.js";
+    import dashboardRoutes from "./routes/dashboard.routes.js";
+    import aiworkoutRoutes from "./routes/aiworkout.routes.js";
+    import aimealgenerateRoutes from "./routes/aimealgenerate.routes.js";
 
 
     // //using routes
@@ -36,7 +38,9 @@ const app=express();
     app.use("/api/v1/bmi", bmiRoutes);
     app.use("/api/v1/workouts", workoutRoutes);
     app.use("/api/v1/meals", mealRoutes);
-    // app.use("/api/v1/ai", aiRoutes);
+    app.use("/api/v1/dashboard", dashboardRoutes);
+    app.use("/api/v1/ai", aiworkoutRoutes);
+    app.use("/api/v1/ai", aimealgenerateRoutes);
 
 
 app.use(errorHandler);

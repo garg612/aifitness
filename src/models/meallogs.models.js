@@ -26,6 +26,18 @@ const mealLogSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    totalCarbs: {
+      type: Number,
+      default: 0,
+    },
+    totalProtein: {
+      type: Number,
+      default: 0,
+    },
+    totalFat: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

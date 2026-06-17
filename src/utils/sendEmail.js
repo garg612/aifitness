@@ -11,7 +11,7 @@ const sendemail=async(options)=>{
         }
     });
 
-    const emailtextual=mailgenerator.generatePlainText(options.mailgenContent);
+    const emailtextual=mailgenerator.generatePlaintext(options.mailgenContent);
     const emailhtml=mailgenerator.generate(options.mailgenContent);
 
     const transporter=nodemailer.createTransport({
@@ -59,4 +59,22 @@ const emailverificationTemplate = (name, verificationurl) => {
     }
 };
 
-export { sendemail, emailverificationTemplate };
+const passwordResetTemplate = (name, resetUrl) => {
+    return {
+        body:{
+            name:name,
+            intro:"You are receiving this email because a password reset request was made for your account.",
+            action:{
+                instructions:"Please click the button below to reset your password. This link is valid for 15 minutes:",
+                button:{
+                    color:"#DC3545",
+                    text:"Reset Password",
+                    link:resetUrl
+                },
+            },
+            outro:"If you did not request this, please ignore this email and your password will remain secure."
+        },
+    }
+};
+
+export { sendemail, emailverificationTemplate, passwordResetTemplate };

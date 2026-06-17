@@ -34,6 +34,21 @@ const workoutSchema = new mongoose.Schema(
     isTemplate: {
       type: Boolean,
       default: false,
+        },
+
+    generatedByAI: {
+        type: Boolean,
+        default: false,
+    },
+
+    source: {
+        type: String,
+        enum: ["manual", "ai-generated"],
+        default: "manual",
+    },
+    weeklyPlan: {
+        type: Array,
+        default: [],
     },
   },
   {

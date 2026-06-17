@@ -29,11 +29,25 @@ const getMealById=async({userId,mealId})=>{
         user:userId
     });
 
+    if (!meal) {
+        throw new ApiError(404, "Meal not found");
+    }
+
     const item=await MealItem.find({
         mealPlan:mealId
     });
 
-    return {meal,item};
+    // AI plans store meals in embedded arrays, not the MealItem collection
+    if (item.length === 0) {
+        const embeddedMeals = meal.weeklyPlan?.length
+            ? meal.weeklyPlan
+            : meal.meals?.length
+                ? meal.meals
+                : [];
+        return { meal, item: embeddedMeals };
+    }
+
+    return { meal, item };
 };
 
 const getAllMeals=async({userId})=>{
@@ -69,18 +83,54 @@ const deleteMeal=async({userId,mealId})=>{
 }
 
 
-const consumeMeal = async (userId, mealId) => {
+const consumeMeal = async (userId, mealId, { day, mealType } = {}) => {
     const mealPlan = await MealPlan.findOne({ _id: mealId, user: userId });
     
     if (!mealPlan) {
         throw new ApiError(404, "Meal not found");
     }
 
+    let calories = 0;
+    let protein = 0;
+    let carbs = 0;
+    let fat = 0;
+
+    if (mealPlan.generatedByAI && day && mealType) {
+        const dayPlan = mealPlan.weeklyPlan?.find(d => d.day.toLowerCase() === day.toLowerCase()) || 
+                        mealPlan.meals?.find(d => d.day.toLowerCase() === day.toLowerCase());
+        if (!dayPlan) {
+            throw new ApiError(400, `Meal plan for day '${day}' not found`);
+        }
+        
+        const meal = dayPlan.meals?.find(m => m.mealType.toLowerCase() === mealType.toLowerCase());
+        if (!meal) {
+            throw new ApiError(400, `Meal type '${mealType}' not found on ${day}`);
+        }
+
+        calories = meal.calories || 0;
+        protein = meal.protein || 0;
+        carbs = meal.carbs || 0;
+        fat = meal.fats || 0;
+    } else {
+        const items = await MealItem.find({ mealPlan: mealId });
+        if (items.length > 0) {
+            calories = items.reduce((sum, item) => sum + ((item.calories || 0) * (parseFloat(item.quantity) || 1)), 0);
+            protein = items.reduce((sum, item) => sum + ((item.protein || 0) * (parseFloat(item.quantity) || 1)), 0);
+            carbs = items.reduce((sum, item) => sum + ((item.carbs || 0) * (parseFloat(item.quantity) || 1)), 0);
+            fat = items.reduce((sum, item) => sum + ((item.fats || 0) * (parseFloat(item.quantity) || 1)), 0);
+        } else {
+            calories = mealPlan.totalCalories || 0;
+        }
+    }
+
     const log = await MealLog.create({
         user: userId,
         mealPlan: mealId,
         consumedAt: new Date(),
-        totalCalories: mealPlan.totalCalories
+        totalCalories: calories,
+        totalProtein: protein,
+        totalCarbs: carbs,
+        totalFat: fat
     });
     
     return log;
