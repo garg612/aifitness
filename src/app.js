@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import errorHandler  from "./middlewares/error.middlewares.js";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 const app=express();
@@ -12,6 +13,11 @@ const app=express();
     app.use(express.json());
     app.use(express.urlencoded({extended:true}));
     app.use(helmet());
+    app.use(rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100, // limit each IP to 100 requests per windowMs
+        message: "Too many requests from this IP, please try again later."
+    }));
     app.use(cookieParser());
     app.use(morgan('common'));
 
