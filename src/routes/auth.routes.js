@@ -5,6 +5,10 @@ import validate from "../middlewares/validate.middlewares.js";
 import { signupSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "../validation/auth.validation.js";
 import verifyJWT from "../middlewares/verifyJWT.js";
 import * as authController from "../controllers/auth.controllers.js";
+import { microsoftAuthController } from "../controllers/microsoftAuth.controllers.js";
+import { googleAuthcontroller } from "../controllers/googleAuth.controllers.js";
+
+
 
 const router = Router();
 
@@ -26,4 +30,6 @@ router.post("/forgot-password",validate(forgotPasswordSchema),authController.for
 
 router.post("/reset-password",validate(resetPasswordSchema),authController.resetPassword);
 
+router.post("/google", googleAuthcontroller);
+router.post("/microsoft", microsoftAuthController);
 export default router;

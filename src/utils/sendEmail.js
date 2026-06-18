@@ -6,7 +6,7 @@ const sendemail=async(options)=>{
     const mailgenerator=new Mailgen({
         theme:"default",
         product:{
-            name:"Authentication System",
+            name:"AI Fitness App",
             link:process.env.FRONTEND_URL
         }
     });

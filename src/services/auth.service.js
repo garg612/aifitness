@@ -6,6 +6,7 @@ import { generateAccessToken ,generateRefreshToken,verifyRefreshToken} from "../
 import hashToken from "../utils/hashToken.js";
 import generateRandomToken from "../utils/generateRandomToken.js";
 import EmailVerificationToken from "../models/emailVerificationToken.models.js";
+import UserProfile from "../models/userprofile.models.js";
 import {sendemail, emailverificationTemplate, passwordResetTemplate } from "../utils/sendEmail.js";
 
 
@@ -22,6 +23,11 @@ const signup = async ({ fullName, email, password }) => {
     email,
     passwordHash: password,
   });
+
+  await UserProfile.create({
+    user: user._id,
+  });
+
 
   const rawtoken=generateRandomToken();
   const hashtoken=hashToken(rawtoken);
@@ -245,4 +251,41 @@ const resetPassword = async (token, newPassword) => {
   };
 };
 
-export { signup, login, verifyEmail, logout ,refreshToken,logoutAllDevices, requestPasswordReset, resetPassword};
+
+const sociallogin = async ({ email, fullName, provider, providerId }) => {
+
+    let user=await User.findOne({email});
+
+    if(!user){
+      user=await User.create({
+        email,
+        fullName,
+        provider,
+        providerId,
+        isVerified:true
+      });
+
+      await UserProfile.create({
+        user:user._id
+      })
+    }
+
+    const accessToken=generateAccessToken(user._id);
+
+    const refreshToken=generateRefreshToken(user._id);
+
+    await RefreshToken.create({
+      user:user._id,
+      tokenhash:hashToken(refreshToken),
+      expiresAt:new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    });
+
+    return {
+      user,
+      accessToken,
+      refreshToken
+    };
+};
+
+
+export { signup, login, verifyEmail, logout ,refreshToken,logoutAllDevices, requestPasswordReset, resetPassword,sociallogin};

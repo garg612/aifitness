@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema(
       enum: ["local", "google", "microsoft"],
       default: "local",
     },
+    providerId:{
+      type:String,
+      default:null
+    },
 
     isVerified: {
       type: Boolean,
