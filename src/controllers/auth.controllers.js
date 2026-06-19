@@ -1,6 +1,7 @@
 import * as authService from "../services/auth.service.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import ApiError from "../utils/ApiError.js";
 import cookieOptions from "../utils/cookieOptions.js";
 
 const signup = asyncHandler(async (req, res, next) => {
