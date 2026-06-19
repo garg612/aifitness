@@ -51,11 +51,33 @@ const getMealById=async({userId,mealId})=>{
 };
 
 const getAllMeals=async({userId})=>{
-    return await MealPlan.find({
+    const meals = await MealPlan.find({
         user:userId
     }).sort({
         createdAt:-1
-    })
+    }).lean();
+
+    for (let meal of meals) {
+        if (!meal.generatedByAI) {
+            const items = await MealItem.find({ mealPlan: meal._id });
+            meal.protein = items.reduce((sum, i) => sum + ((i.protein || 0) * (parseFloat(i.quantity) || 1)), 0);
+            meal.carbs = items.reduce((sum, i) => sum + ((i.carbs || 0) * (parseFloat(i.quantity) || 1)), 0);
+            meal.fats = items.reduce((sum, i) => sum + ((i.fats || 0) * (parseFloat(i.quantity) || 1)), 0);
+        } else {
+            let protein = 0, carbs = 0, fats = 0;
+            const dayMeals = meal.weeklyPlan?.[0]?.meals || meal.meals?.[0]?.meals || [];
+            for (let dm of dayMeals) {
+                protein += dm.protein || 0;
+                carbs += dm.carbs || 0;
+                fats += dm.fats || 0;
+            }
+            meal.protein = protein;
+            meal.carbs = carbs;
+            meal.fats = fats;
+        }
+    }
+
+    return meals;
 };
 
 const updateMeal=async({userId,mealId,data})=>{

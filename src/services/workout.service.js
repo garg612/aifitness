@@ -25,7 +25,23 @@ const createWorkout = async ({ userId, title, description, duration, difficulty,
 };
 
 const getallworkout = async ({ userId }) => {
-    return await Workout.find({ user: userId }).sort({ createdAt: -1 });
+    const workouts = await Workout.find({ user: userId }).sort({ createdAt: -1 }).lean();
+
+    for (let workout of workouts) {
+        if (!workout.generatedByAI) {
+            const exercises = await Exercise.find({ workout: workout._id });
+            workout.exerciseCount = exercises.length;
+            workout.caloriesBurned = exercises.reduce((sum, e) => sum + (e.caloriesBurned || 0), 0);
+        } else {
+            // For AI generated workouts, extract details from the first day or weekly plan
+            const dayPlan = workout.weeklyPlan?.find(d => !d.isRestDay) || workout.weeklyPlan?.[0];
+            const exercises = dayPlan?.exercises || [];
+            workout.exerciseCount = exercises.length;
+            workout.caloriesBurned = exercises.reduce((sum, e) => sum + (e.caloriesBurned || 0), 0);
+        }
+    }
+
+    return workouts;
 };
 
 const getworkoutbyid = async ({ userId, workoutId }) => {

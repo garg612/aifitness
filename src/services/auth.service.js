@@ -3,7 +3,7 @@ import RefreshToken from "../models/refreshtoken.models.js";
 import PasswordResetToken from "../models/PasswordResetToken.models.js";
 import ApiError from "../utils/ApiError.js";
 import { generateAccessToken ,generateRefreshToken,verifyRefreshToken} from "../utils/jwt.js";
-import hashToken from "../utils/hashToken.js";
+import hashToken from "../utils/hashtoken.js";
 import generateRandomToken from "../utils/generateRandomToken.js";
 import EmailVerificationToken from "../models/emailVerificationToken.models.js";
 import UserProfile from "../models/userprofile.models.js";

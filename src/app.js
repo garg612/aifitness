@@ -22,9 +22,8 @@ const app=express();
     app.use(morgan('common'));
 
     app.use(cors({
-        origin:"true",
-        credentials:true,
-
+        origin: ["http://localhost:5173", "https://ai-fitness-cilent.netlify.app"],
+        credentials: true
     }));
 
     // Importing routes
