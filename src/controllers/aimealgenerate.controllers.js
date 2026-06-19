@@ -1,5 +1,5 @@
 import { generateMealPlanService } from "../services/aimealgenerate.service.js";
-import asyncHandler from "../utils/asynchandler.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
 const generateAIMeal = asyncHandler(async (req, res) => {

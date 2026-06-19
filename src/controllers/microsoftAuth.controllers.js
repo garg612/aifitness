@@ -1,5 +1,5 @@
 import { microsoftAuthService } from "../services/microsoftAuth.service.js";
-import asyncHandler from "../utils/asynchandler.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import cookieOptions from "../utils/cookieOptions.js";
 

@@ -1,5 +1,5 @@
 import { generateWorkoutPlanService } from "../services/aiworkout.service.js";
-import asyncHandler from "../utils/asynchandler.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 
 const generateAIWorkout = asyncHandler(async (req, res) => {
