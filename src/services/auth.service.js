@@ -266,6 +266,26 @@ const resetPassword = async (token, newPassword) => {
   };
 };
 
+const changePassword = async (userId, oldPassword, newPassword) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const isPasswordCorrect = await user.comparePassword(oldPassword);
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid current password");
+  }
+
+  user.passwordHash = newPassword;
+  await user.save();
+
+  return {
+    success: true,
+    message: "Password changed successfully",
+  };
+};
+
 
 const sociallogin = async ({ email, fullName, provider, providerId }) => {
 
@@ -312,4 +332,4 @@ const sociallogin = async ({ email, fullName, provider, providerId }) => {
 };
 
 
-export { signup, login, verifyEmail, logout ,refreshToken,logoutAllDevices, requestPasswordReset, resetPassword,sociallogin};
+export { signup, login, verifyEmail, logout ,refreshToken,logoutAllDevices, requestPasswordReset, resetPassword, changePassword, sociallogin};
