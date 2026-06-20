@@ -4,6 +4,7 @@ import BMIRecord from "../models/bmirecord.models.js";
 import Workout from "../models/workout.models.js";
 import ApiError from "../utils/ApiError.js";
 import AIRequest from "../models/airequest.models.js";
+import calculateBMI from "../utils/calculateBMI.js";
 
 const buildWorkoutPrompt = (profile, bmi) => {
   return `
@@ -65,7 +66,7 @@ const normalizeDifficulty = (difficulty = "") => {
   return "beginner";
 };
 
-const hasRecentGeneration = async (userId) => {
+const hasRecentGeneration = async (userId, profile, bmi) => {
   const recentWorkout = await Workout.findOne({
     user: userId,
     generatedByAI: true,
@@ -73,6 +74,14 @@ const hasRecentGeneration = async (userId) => {
   }).sort({ createdAt: -1 });
 
   if (!recentWorkout) {
+    return null;
+  }
+
+  const lastProfileChange = new Date(profile?.updatedAt || profile?.createdAt || 0).getTime();
+  const lastBmiChange = new Date(bmi?.createdAt || 0).getTime();
+  const latestRelevantChange = Math.max(lastProfileChange, lastBmiChange);
+
+  if (latestRelevantChange && new Date(recentWorkout.createdAt).getTime() < latestRelevantChange) {
     return null;
   }
 
@@ -85,11 +94,6 @@ const hasRecentGeneration = async (userId) => {
 };
 
 export const generateWorkoutPlanService = async (userId) => {
-  const recentWorkout = await hasRecentGeneration(userId);
-  if (recentWorkout) {
-    throw new ApiError(409, "You already generated a workout plan this week. Please try again after 7 days or update your profile and BMI for the next cycle.");
-  }
-
   // Fetch profile and latest BMI in parallel
   const [profile, bmi] = await Promise.all([
     UserProfile.findOne({ user: userId }),
@@ -98,19 +102,31 @@ export const generateWorkoutPlanService = async (userId) => {
 
   // Validate data exists
   if (!profile) {
-    const error = new Error("Please complete your profile first before generating a plan.");
-    error.statusCode = 400;
-    throw error;
+    throw new ApiError(400, "Please complete your profile first before generating a plan.");
   }
 
-  if (!bmi) {
-    const error = new Error("Please add your BMI record first before generating a plan.");
-    error.statusCode = 400;
-    throw error;
+  let effectiveBMI = bmi;
+  if (!effectiveBMI && profile.height && profile.weight) {
+    const calculated = calculateBMI(profile.height, profile.weight);
+    effectiveBMI = {
+      bmi: calculated.bmi,
+      category: calculated.category,
+      weight: profile.weight,
+      height: profile.height,
+    };
+  }
+
+  if (!effectiveBMI) {
+    throw new ApiError(400, "Please add your height and weight in your profile before generating a workout plan.");
+  }
+
+  const recentWorkout = await hasRecentGeneration(userId, profile, effectiveBMI);
+  if (recentWorkout) {
+    throw new ApiError(409, "You already generated a workout plan this week. Please try again after 7 days or update your profile and BMI for the next cycle.");
   }
 
   // Build prompt
-  const prompt = buildWorkoutPrompt(profile, bmi);
+  const prompt = buildWorkoutPrompt(profile, effectiveBMI);
 
   // Call Groq
   let response;
@@ -141,7 +157,7 @@ export const generateWorkoutPlanService = async (userId) => {
       errorMessage: errorMsg,
     }).catch(err => console.error("Failed to log failed AIRequest:", err));
 
-    throw new ApiError(500, errorMsg);
+    throw new ApiError(502, errorMsg);
   }
 
   const tokensUsed = response?.usage?.total_tokens || 0;

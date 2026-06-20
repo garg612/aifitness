@@ -43,7 +43,7 @@ export const getDashboardService = async (userId) => {
     totalWorkouts,
     totalMealPlans,
     todayMealLogs,
-    todayWorkoutLog,
+    todayWorkoutLogs,
     weeklyWorkoutLogs,
   ] = await Promise.all([
 
@@ -81,10 +81,10 @@ export const getDashboardService = async (userId) => {
     }),
 
     // Today's workout log
-    WorkoutLog.findOne({
+    WorkoutLog.find({
       user: userId,
       completedAt: { $gte: start, $lte: end },
-    }),
+    }).select("completedAt status caloriesBurned duration"),
 
     // This week's workout logs for consistency
     WorkoutLog.find({
@@ -113,11 +113,23 @@ export const getDashboardService = async (userId) => {
 
   // --- Today's meal from latest meal plan ---
   let todaysMeal = null;
-  if (latestMealPlan?.meals?.length > 0) {
+  if (latestMealPlan?.weeklyPlan?.length > 0) {
+    const todayPlan = latestMealPlan.weeklyPlan.find((day) => day.day === todayName);
+    todaysMeal = todayPlan
+      ? {
+          day: todayPlan.day,
+          meals: todayPlan.meals || [],
+          dailyCalorieTarget: latestMealPlan.dailyCalorieTarget,
+          dietPreference: latestMealPlan.dietPreference,
+          generatedByAI: latestMealPlan.generatedByAI,
+        }
+      : null;
+  } else if (latestMealPlan?.meals?.length > 0) {
     todaysMeal = {
+      day: todayName,
+      meals: latestMealPlan.meals,
       dailyCalorieTarget: latestMealPlan.dailyCalorieTarget,
       dietPreference: latestMealPlan.dietPreference,
-      meals: latestMealPlan.meals,
       generatedByAI: latestMealPlan.generatedByAI,
     };
   }
@@ -143,8 +155,44 @@ export const getDashboardService = async (userId) => {
     0
   );
 
+  const totalCaloriesBurned = todayWorkoutLogs.reduce(
+    (sum, log) => sum + (log.caloriesBurned || 0),
+    0
+  );
+
+  const totalWorkoutDuration = todayWorkoutLogs.reduce(
+    (sum, log) => sum + (log.duration || 0),
+    0
+  );
+
   const remainingCalories =
     (latestMealPlan?.dailyCalorieTarget || 0) - totalCaloriesConsumed;
+
+  // --- BMI fallback from profile data ---
+  let currentBMI = latestBMI;
+  if (!currentBMI && profile?.height && profile?.weight) {
+    const heightInMeters = profile.height / 100;
+    const calculatedBmi = profile.weight / (heightInMeters * heightInMeters);
+
+    let category = "Normal";
+    if (calculatedBmi < 18.5) {
+      category = "Underweight";
+    } else if (calculatedBmi < 25) {
+      category = "Normal";
+    } else if (calculatedBmi < 30) {
+      category = "Overweight";
+    } else {
+      category = "Obese";
+    }
+
+    currentBMI = {
+      bmi: Number(calculatedBmi.toFixed(2)),
+      category,
+      weight: profile.weight,
+      height: profile.height,
+      createdAt: profile.updatedAt || profile.createdAt || null,
+    };
+  }
 
   // --- Weekly workout consistency ---
   const workoutConsistency = {
@@ -196,16 +244,16 @@ export const getDashboardService = async (userId) => {
       activityLevel: profile.activityLevel,
       dietPreference: profile.dietPreference,
       height: profile.height,
-      weight: latestBMI?.weight || profile.weight,
+      weight: currentBMI?.weight || profile.weight,
     },
 
     // BMI info
     bmi: {
-      current: latestBMI?.bmi || null,
-      category: latestBMI?.category || null,
-      weight: latestBMI?.weight || null,
-      height: latestBMI?.height || null,
-      lastUpdated: latestBMI?.createdAt || null,
+      current: currentBMI?.bmi || null,
+      category: currentBMI?.category || null,
+      weight: currentBMI?.weight || null,
+      height: currentBMI?.height || null,
+      lastUpdated: currentBMI?.createdAt || null,
       trend: bmiHistory.reverse(), // oldest to newest for graph
     },
 
@@ -216,7 +264,7 @@ export const getDashboardService = async (userId) => {
           focus: todaysWorkout.focus,
           isRestDay: todaysWorkout.isRestDay,
           exercises: todaysWorkout.exercises || [],
-          isCompleted: !!todayWorkoutLog,
+          isCompleted: todayWorkoutLogs.length > 0,
         }
       : null,
 
@@ -229,6 +277,9 @@ export const getDashboardService = async (userId) => {
       caloriesRemaining: remainingCalories > 0 ? remainingCalories : 0,
       dailyTarget: latestMealPlan?.dailyCalorieTarget || 0,
       mealsLogged: todayMealLogs.length,
+      caloriesBurned: totalCaloriesBurned,
+      workoutDuration: totalWorkoutDuration,
+      workoutsLogged: todayWorkoutLogs.length,
       macros: {
         protein: totalProteinConsumed,
         carbs: totalCarbsConsumed,

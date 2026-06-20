@@ -8,7 +8,7 @@ const signup = asyncHandler(async (req, res, next) => {
   const result = await authService.signup(req.body);
 
     res.status(201).json(
-      new ApiResponse(201, result.message, result.data)
+      new ApiResponse(201, "User registered successfully", result.data)
     );
   
 });
@@ -30,11 +30,10 @@ const login = asyncHandler(async (req, res, next) => {
       sameSite: "lax",
     })
     .status(200)
-    .json({
-      success: true,
+    .json(new ApiResponse(200, "Login successful", {
       accessToken: result.accessToken,
       user: safeUser,
-    });
+    }));
 
 });
 
@@ -44,7 +43,7 @@ const verifyEmail=asyncHandler(async(req,res)=>{
 
   const response=await authService.verifyEmail(token);
 
-  return res.status(200).json(new ApiResponse(200,response.message));
+  return res.status(200).json(new ApiResponse(200, "Email verified successfully", null));
 
 });
 
@@ -56,7 +55,7 @@ const verifyEmail=asyncHandler(async(req,res)=>{
   res.clearCookie("refreshToken", cookieOptions);
 
   return res.status(200).json(
-    new ApiResponse(200, "Logged out successfully")
+    new ApiResponse(200, "Logged out successfully", null)
   );
 });
 
@@ -87,10 +86,7 @@ const verifyEmail=asyncHandler(async(req,res)=>{
   res.clearCookie("refreshToken", cookieOptions);
 
   return res.status(200).json(
-    new ApiResponse(
-      200,
-      "Logged out from all devices"
-    )
+    new ApiResponse(200, "Logged out from all devices", null)
   );
 });
 
@@ -108,13 +104,13 @@ const verifyEmail=asyncHandler(async(req,res)=>{
 const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
   const result = await authService.requestPasswordReset(email);
-  return res.status(200).json(new ApiResponse(200, result.message));
+  return res.status(200).json(new ApiResponse(200, "Password reset email sent successfully", null));
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
   const { token, password } = req.body;
   const result = await authService.resetPassword(token, password);
-  return res.status(200).json(new ApiResponse(200, result.message));
+  return res.status(200).json(new ApiResponse(200, "Password reset successfully", null));
 });
 
 export { signup, login, verifyEmail, logout, refreshToken, logoutAllDevices, getCurrentUser, forgotPassword, resetPassword };

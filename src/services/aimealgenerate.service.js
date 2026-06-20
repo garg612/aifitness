@@ -4,6 +4,7 @@ import BMIRecord from "../models/bmirecord.models.js";
 import MealPlan from "../models/mealPlan.models.js";
 import ApiError from "../utils/ApiError.js";
 import AIRequest from "../models/airequest.models.js";
+import calculateBMI from "../utils/calculateBMI.js";
 
 // TDEE Calculator using Mifflin-St Jeor formula
 const calculateTDEE = (profile, bmi) => {
@@ -101,7 +102,7 @@ Use exactly this structure:
 `;
 };
 
-const hasRecentGeneration = async (userId) => {
+const hasRecentGeneration = async (userId, profile, bmi) => {
   const recentPlan = await MealPlan.findOne({
     user: userId,
     generatedByAI: true,
@@ -109,6 +110,14 @@ const hasRecentGeneration = async (userId) => {
   }).sort({ createdAt: -1 });
 
   if (!recentPlan) {
+    return null;
+  }
+
+  const lastProfileChange = new Date(profile?.updatedAt || profile?.createdAt || 0).getTime();
+  const lastBmiChange = new Date(bmi?.createdAt || 0).getTime();
+  const latestRelevantChange = Math.max(lastProfileChange, lastBmiChange);
+
+  if (latestRelevantChange && new Date(recentPlan.createdAt).getTime() < latestRelevantChange) {
     return null;
   }
 
@@ -147,11 +156,6 @@ const extractWeeklyPlan = (data) => {
 };
 
 export const generateMealPlanService = async (userId) => {
-  const recentPlan = await hasRecentGeneration(userId);
-  if (recentPlan) {
-    throw new ApiError(409, "You already generated a meal plan this week. Please try again after 7 days or update your profile and BMI for the next cycle.");
-  }
-
   // Fetch profile and latest BMI from DB in parallel
   // dietPreference comes from profile — no req.body, no query param
   const [profile, bmi] = await Promise.all([
@@ -163,18 +167,34 @@ export const generateMealPlanService = async (userId) => {
     throw new ApiError(400, "Please complete your profile first before generating a meal plan.");
   }
 
-  if (!bmi) {
-    throw new ApiError(400, "Please add your BMI record first before generating a meal plan.");
+  let effectiveBMI = bmi;
+  if (!effectiveBMI && profile.height && profile.weight) {
+    const calculated = calculateBMI(profile.height, profile.weight);
+    effectiveBMI = {
+      bmi: calculated.bmi,
+      category: calculated.category,
+      weight: profile.weight,
+      height: profile.height,
+    };
+  }
+
+  if (!effectiveBMI) {
+    throw new ApiError(400, "Please add your height and weight in your profile before generating a meal plan.");
+  }
+
+  const recentPlan = await hasRecentGeneration(userId, profile, effectiveBMI);
+  if (recentPlan) {
+    throw new ApiError(409, "You already generated a meal plan this week. Please try again after 7 days or update your profile and BMI for the next cycle.");
   }
 
   // Validate diet preference exists in profile
   const dietPreference = profile.dietPreference || "Non-Vegetarian";
 
   // Calculate TDEE from DB data
-  const tdee = calculateTDEE(profile, bmi);
+  const tdee = calculateTDEE(profile, effectiveBMI);
 
   // Build prompt using only DB data
-  const prompt = buildMealPrompt(profile, bmi, tdee);
+  const prompt = buildMealPrompt(profile, effectiveBMI, tdee);
 
   // Call Groq
   let response;
