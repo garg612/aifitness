@@ -113,4 +113,10 @@ const resetPassword = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, "Password reset successfully", null));
 });
 
-export { signup, login, verifyEmail, logout, refreshToken, logoutAllDevices, getCurrentUser, forgotPassword, resetPassword };
+const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  await authService.changePassword(req.user._id, oldPassword, newPassword);
+  return res.status(200).json(new ApiResponse(200, "Password changed successfully", null));
+});
+
+export { signup, login, verifyEmail, logout, refreshToken, logoutAllDevices, getCurrentUser, forgotPassword, resetPassword, changePassword };
