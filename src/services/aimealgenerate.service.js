@@ -7,15 +7,25 @@ import AIRequest from "../models/airequest.models.js";
 
 // TDEE Calculator using Mifflin-St Jeor formula
 const calculateTDEE = (profile, bmi) => {
-  const age = Math.floor(
-    (new Date() - new Date(profile.dob)) / (365.25 * 24 * 60 * 60 * 1000)
-  );
+  let age = 20; // default fallback
+  if (profile.dob) {
+    const calculatedAge = Math.floor(
+      (new Date() - new Date(profile.dob)) / (365.25 * 24 * 60 * 60 * 1000)
+    );
+    if (!isNaN(calculatedAge)) {
+      age = calculatedAge;
+    }
+  }
+
+  const height = profile.height || 170;
+  const weight = bmi.weight || 70;
 
   let bmr;
-  if (profile.gender === "male") {
-    bmr = 10 * bmi.weight + 6.25 * profile.height - 5 * age + 5;
+  const gender = profile.gender || "male"; // default fallback
+  if (gender === "male") {
+    bmr = 10 * weight + 6.25 * height - 5 * age + 5;
   } else {
-    bmr = 10 * bmi.weight + 6.25 * profile.height - 5 * age - 161;
+    bmr = 10 * weight + 6.25 * height - 5 * age - 161;
   }
 
   const activityMultipliers = {
@@ -26,7 +36,8 @@ const calculateTDEE = (profile, bmi) => {
   };
 
   const multiplier = activityMultipliers[profile.activityLevel] || 1.55;
-  return Math.round(bmr * multiplier);
+  const tdeeVal = Math.round(bmr * multiplier);
+  return isNaN(tdeeVal) ? 2000 : tdeeVal;
 };
 
 const buildMealPrompt = (profile, bmi, tdee) => {
