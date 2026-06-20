@@ -11,8 +11,12 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
-
-  const decoded = verifyAccessToken(token);
+  let decoded;
+  try {
+    decoded = verifyAccessToken(token);
+  } catch (error) {
+    throw new ApiError(401, error.message || "Invalid access token");
+  }
 
   const user = await User.findById(decoded.userId).select("-passwordHash");
 

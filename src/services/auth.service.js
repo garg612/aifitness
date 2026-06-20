@@ -26,6 +26,15 @@ const signup = async ({ fullName, email, password }) => {
 
   await UserProfile.create({
     user: user._id,
+    gender: "male",
+    dob: new Date("1990-01-01"),
+    height: 170,
+    weight: 70,
+    targetWeight: 65,
+    startWeight: 70,
+    dietPreference: "Non-Vegetarian",
+    goal: "weight_loss",
+    activityLevel: "moderate",
   });
 
 
@@ -148,7 +157,12 @@ const logout = async (refreshToken) => {
 
 
 const refreshToken = async (incomingToken) => {
-  const decoded = verifyRefreshToken(incomingToken);
+  let decoded;
+  try {
+    decoded = verifyRefreshToken(incomingToken);
+  } catch (error) {
+    throw new ApiError(401, "Invalid or expired refresh token");
+  }
 
   const hashedToken = hashToken(incomingToken);
 
@@ -266,8 +280,17 @@ const sociallogin = async ({ email, fullName, provider, providerId }) => {
       });
 
       await UserProfile.create({
-        user:user._id
-      })
+        user: user._id,
+        gender: "male",
+        dob: new Date("1990-01-01"),
+        height: 170,
+        weight: 70,
+        targetWeight: 65,
+        startWeight: 70,
+        dietPreference: "Non-Vegetarian",
+        goal: "weight_loss",
+        activityLevel: "moderate",
+  });
     }
 
     const accessToken=generateAccessToken(user._id);
