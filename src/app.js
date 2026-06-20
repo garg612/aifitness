@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import errorHandler  from "./middlewares/error.middlewares.js";
 import rateLimit from "express-rate-limit";
+import logger from './utils/logger.js';
 
 dotenv.config();
 const app=express();
@@ -19,7 +20,11 @@ const app=express();
         message: "Too many requests from this IP, please try again later."
     }));
     app.use(cookieParser());
-    app.use(morgan('common'));
+    app.use(morgan('common', {
+        stream: {
+            write: (message) => logger.http(message.trim())
+        }
+    }));
 
     app.use(cors({
         origin: ["http://localhost:5173", "https://ai-fitness-cilent.netlify.app"],

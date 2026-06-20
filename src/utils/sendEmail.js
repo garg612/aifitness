@@ -1,5 +1,6 @@
 import Mailgen from "mailgen";//use to prepare email template
 import nodemailer from "nodemailer";//use to send email
+import logger from "./logger.js";
 
 
 const sendemail=async(options)=>{
@@ -33,9 +34,9 @@ const sendemail=async(options)=>{
 
     try{
         await transporter.sendMail(mail);
-        console.log("Email sent successfully");
+        logger.info("Email sent successfully");
     }catch(error){
-        console.error("Error sending email:",error);
+        logger.error("Error sending email: ", error);
     }
 };
 

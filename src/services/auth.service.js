@@ -8,6 +8,7 @@ import generateRandomToken from "../utils/generateRandomToken.js";
 import EmailVerificationToken from "../models/emailVerificationToken.models.js";
 import UserProfile from "../models/userprofile.models.js";
 import {sendemail, emailverificationTemplate, passwordResetTemplate } from "../utils/sendEmail.js";
+import logger from "../utils/logger.js";
 
 
 
@@ -50,7 +51,7 @@ const signup = async ({ fullName, email, password }) => {
     tokenHash: hashtoken,
     expiresAt: new Date(Date.now() +  15 * 60 * 1000), // 15 minutes
   });
-  console.log("Email verification token created:", hashtoken);
+  logger.info(`Email verification token created: ${hashtoken}`);
 
   const verifyurl=`${process.env.FRONTEND_URL}/verify-email/${rawtoken}`;
 
@@ -61,7 +62,7 @@ const signup = async ({ fullName, email, password }) => {
           user.fullName,
           verifyurl)
     }).catch((error)=>{
-        console.error("Error sending email:",error);
+        logger.error("Error sending email: ", error);
     });
 
 
@@ -228,7 +229,7 @@ const requestPasswordReset = async (email) => {
     subject: "Password Reset Request",
     mailgenContent: passwordResetTemplate(user.fullName, resetUrl),
   }).catch((error) => {
-    console.error("Error sending password reset email:", error);
+    logger.error("Error sending password reset email: ", error);
   });
 
   return {

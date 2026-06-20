@@ -1,5 +1,6 @@
 import { OAuth2Client } from "google-auth-library";
 import {sociallogin} from "./auth.service.js";
+import logger from "../utils/logger.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -14,7 +15,7 @@ export const googleAuthService=async(idToken)=>{
 
     const {email,name,sub}  =payload;
 
-    console.log("Google payload:", payload);
+    logger.debug(`Google payload: ${JSON.stringify(payload)}`);
     if (!email || !name || !sub) {
         const error = new Error("Invalid Google token payload.");
         error.statusCode = 400;

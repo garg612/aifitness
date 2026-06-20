@@ -5,6 +5,8 @@ import Workout from "../models/workout.models.js";
 import ApiError from "../utils/ApiError.js";
 import AIRequest from "../models/airequest.models.js";
 import calculateBMI from "../utils/calculateBMI.js";
+import logger from "../utils/logger.js";
+
 
 const buildWorkoutPrompt = (profile, bmi) => {
   return `
@@ -155,7 +157,7 @@ export const generateWorkoutPlanService = async (userId) => {
       tokensUsed: response?.usage?.total_tokens || 0,
       status: "failed",
       errorMessage: errorMsg,
-    }).catch(err => console.error("Failed to log failed AIRequest:", err));
+    }).catch(err => logger.error("Failed to log failed AIRequest: ", err));
 
     throw new ApiError(502, errorMsg);
   }
@@ -170,7 +172,7 @@ export const generateWorkoutPlanService = async (userId) => {
     response: rawText,
     tokensUsed,
     status: "success",
-  }).catch(err => console.error("Failed to log successful AIRequest:", err));
+  }).catch(err => logger.error("Failed to log successful AIRequest: ", err));
 
   // Save to DB
   const weeklyPlan = Array.isArray(data.weeklyPlan) ? data.weeklyPlan : [];

@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 import { sociallogin } from "./auth.service.js";
+import logger from "../utils/logger.js";
 
 // Microsoft's public keys endpoint
 const client = jwksClient({
@@ -39,7 +40,7 @@ export const microsoftAuthService = async (idToken) => {
     audience: process.env.MICROSOFT_CLIENT_ID,
   });
 
-  console.log("Microsoft payload:", payload);
+  logger.debug(`Microsoft payload: ${JSON.stringify(payload)}`);
 
   // Step 4: Extract user info
   // Microsoft uses 'preferred_username' or 'email' for email
@@ -49,7 +50,7 @@ export const microsoftAuthService = async (idToken) => {
   const oid = payload.oid;
 
   if (!email || !name || !oid) {
-    console.log("Missing fields — email:", email, "name:", name, "oid:", oid);
+    logger.warn(`Missing fields in Microsoft payload — email: ${email}, name: ${name}, oid: ${oid}`);
     const error = new Error("Invalid Microsoft token payload.");
     error.statusCode = 400;
     throw error;

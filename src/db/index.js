@@ -1,5 +1,6 @@
 
 import mongoose from "mongoose";
+import logger from "../utils/logger.js";
 
 
     const dbName=process.env.DB_NAME;
@@ -9,9 +10,9 @@ import mongoose from "mongoose";
         await mongoose.connect(baseUrl, {
             dbName: dbName 
         });
-        console.log("Mongodb connected successfully");
+        logger.info("Mongodb connected successfully");
         }catch(err){
-            console.log("Error connecting to mongodb",err);
+            logger.error("Error connecting to mongodb: ", err);
         }
     }
 
