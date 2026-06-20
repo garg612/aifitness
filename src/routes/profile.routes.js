@@ -7,6 +7,6 @@ import {updateProfileSchema} from "../validation/profile.validation.js";
 const router = Router();
 
 router.get("/",verifyJWT,getProfile);
-router.patch("/",verifyJWT,validate(updateProfileSchema),updateProfile);
+router.patch("/update",verifyJWT,validate(updateProfileSchema),updateProfile);
 
 export default router;
