@@ -222,7 +222,7 @@ const requestPasswordReset = async (email) => {
     expiresAt,
   });
 
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${rawToken}`;
 
   sendemail({
     email: user.email,
