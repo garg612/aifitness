@@ -21,6 +21,7 @@ BMI: ${bmi.bmi}
 BMI Category: ${bmi.category}
 Activity Level: ${profile.activityLevel}
 Gender: ${profile.gender}
+Experience: ${profile.experienceLevel}
 
 Return ONLY a valid JSON object. No explanation. No markdown. No extra text. Just raw JSON.
 
