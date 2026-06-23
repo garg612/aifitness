@@ -214,17 +214,17 @@ export const getDashboardService = async (userId) => {
   let goalProgress = null;
   if (
     profile.targetWeight &&
-    latestBMI?.weight &&
+    currentBMI?.weight &&
     profile.startWeight
   ) {
     const totalToLose = Math.abs(profile.startWeight - profile.targetWeight);
-    const lost = Math.abs(profile.startWeight - latestBMI.weight);
+    const lost = Math.abs(profile.startWeight - currentBMI.weight);
     const percentage =
       totalToLose > 0 ? Math.min(Math.round((lost / totalToLose) * 100), 100) : 0;
 
     goalProgress = {
       startWeight: profile.startWeight,
-      currentWeight: latestBMI.weight,
+      currentWeight: currentBMI.weight,
       targetWeight: profile.targetWeight,
       progressPercentage: percentage,
     };

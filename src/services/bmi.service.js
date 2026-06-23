@@ -14,10 +14,18 @@ const createBMI=async({userId, weight, height})=>{
         category
     });
 
+    const currentProfile = await UserProfile.findOne({ user: userId });
+    const updatePayload = { height, weight };
+    if (currentProfile && !currentProfile.startWeight) {
+        updatePayload.startWeight = weight;
+    } else if (!currentProfile) {
+        updatePayload.startWeight = weight;
+    }
+
     await UserProfile.findOneAndUpdate(
         {user:userId},
-        {height, weight},
-        {new:true}
+        updatePayload,
+        {new:true, upsert:true}
     );
 
     return record;

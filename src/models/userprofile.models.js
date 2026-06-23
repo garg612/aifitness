@@ -73,6 +73,7 @@ const userProfileSchema = new mongoose.Schema(
         "intermediate",
         "advanced",
       ],
+      default: "beginner",
     },
   },
   {
