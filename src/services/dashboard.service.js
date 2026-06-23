@@ -134,6 +134,33 @@ export const getDashboardService = async (userId) => {
     };
   }
 
+  // Calculate daily targets based on today's planned meals
+  let todayMealTargetCalories = latestMealPlan?.dailyCalorieTarget || 2000;
+  let todayMealTargetProtein = 0;
+  let todayMealTargetCarbs = 0;
+  let todayMealTargetFats = 0;
+
+  if (todaysMeal && Array.isArray(todaysMeal.meals) && todaysMeal.meals.length > 0) {
+    const sumCalories = todaysMeal.meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+    const sumProtein = todaysMeal.meals.reduce((sum, m) => sum + (m.protein || m.proteins || 0), 0);
+    const sumCarbs = todaysMeal.meals.reduce((sum, m) => sum + (m.carbs || m.carbohydrates || 0), 0);
+    const sumFats = todaysMeal.meals.reduce((sum, m) => sum + (m.fats || m.fat || 0), 0);
+
+    if (sumCalories > 0) todayMealTargetCalories = sumCalories;
+    todayMealTargetProtein = sumProtein;
+    todayMealTargetCarbs = sumCarbs;
+    todayMealTargetFats = sumFats;
+  }
+
+  // Fallback to profile-based macro target calculations if no targets derived from meals
+  if (todayMealTargetCalories === 0 || todayMealTargetProtein === 0) {
+    const calorieTarget = latestMealPlan?.dailyCalorieTarget || 2000;
+    todayMealTargetCalories = calorieTarget;
+    todayMealTargetProtein = Math.round((calorieTarget * 0.30) / 4);
+    todayMealTargetCarbs = Math.round((calorieTarget * 0.45) / 4);
+    todayMealTargetFats = Math.round((calorieTarget * 0.25) / 9);
+  }
+
   // --- Today's calorie intake from meal logs ---
   const totalCaloriesConsumed = todayMealLogs.reduce(
     (sum, log) => sum + (log.totalCalories || 0),
@@ -166,7 +193,7 @@ export const getDashboardService = async (userId) => {
   );
 
   const remainingCalories =
-    (latestMealPlan?.dailyCalorieTarget || 0) - totalCaloriesConsumed;
+    todayMealTargetCalories - totalCaloriesConsumed;
 
   // --- BMI fallback from profile data ---
   let currentBMI = latestBMI;
@@ -275,7 +302,10 @@ export const getDashboardService = async (userId) => {
     todayNutrition: {
       caloriesConsumed: totalCaloriesConsumed,
       caloriesRemaining: remainingCalories > 0 ? remainingCalories : 0,
-      dailyTarget: latestMealPlan?.dailyCalorieTarget || 0,
+      dailyTarget: todayMealTargetCalories,
+      targetProtein: todayMealTargetProtein,
+      targetCarbs: todayMealTargetCarbs,
+      targetFats: todayMealTargetFats,
       mealsLogged: todayMealLogs.length,
       caloriesBurned: totalCaloriesBurned,
       workoutDuration: totalWorkoutDuration,
