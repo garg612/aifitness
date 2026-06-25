@@ -259,10 +259,10 @@ The backend application is deployed on AWS EC2 using:
 
 ---
 
-## 👨‍💻 Contributors
+## 👨‍💻 Contributor
 
 * Kushagra Garg
-* Priyanshu Chaudhary
+
 
 ---
 
