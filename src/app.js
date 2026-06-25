@@ -10,7 +10,7 @@ import logger from './utils/logger.js';
 
 dotenv.config();
 const app=express();
-
+    app.set('trust proxy', 1);
     app.use(express.json());
     app.use(express.urlencoded({extended:true}));
     app.use(helmet());
@@ -25,7 +25,6 @@ const app=express();
             write: (message) => logger.http(message.trim())
         }
     }));
-    app.set('trust proxy', 1);  // ← add this line
     app.use(cors({
         origin: ["http://localhost:5173", "https://ai-fitness-cilent.netlify.app"],
         credentials: true
