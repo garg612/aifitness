@@ -75,6 +75,11 @@ const userProfileSchema = new mongoose.Schema(
       ],
       default: "beginner",
     },
+
+    waterGoal: {
+      type: Number,
+      default: 2000,
+    },
   },
   {
     timestamps: true,

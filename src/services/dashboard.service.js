@@ -4,6 +4,7 @@ import Workout from "../models/workout.models.js";
 import MealPlan from "../models/mealPlan.models.js";
 import MealLog from "../models/meallogs.models.js";
 import WorkoutLog from "../models/workoutlogs.models.js";
+import WaterLog from "../models/waterlog.models.js";
 
 // Get start and end of today
 const getTodayRange = () => {
@@ -45,6 +46,7 @@ export const getDashboardService = async (userId) => {
     todayMealLogs,
     todayWorkoutLogs,
     weeklyWorkoutLogs,
+    todayWaterLogs,
   ] = await Promise.all([
 
     // User profile
@@ -93,6 +95,12 @@ export const getDashboardService = async (userId) => {
         $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
       },
     }).select("completedAt status"),
+
+    // Today's water logs
+    WaterLog.find({
+      user: userId,
+      consumedAt: { $gte: start, $lte: end },
+    }).sort({ consumedAt: 1 }),
   ]);
 
   // Validate profile
@@ -336,5 +344,12 @@ export const getDashboardService = async (userId) => {
 
     // Goal progress
     goalProgress,
+
+    // Today's water intake
+    todayWater: {
+      logs: todayWaterLogs,
+      goal: profile ? (profile.waterGoal || 2000) : 2000,
+      totalIntake: todayWaterLogs.reduce((sum, log) => sum + log.amount, 0),
+    },
   };
 };

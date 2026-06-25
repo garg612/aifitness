@@ -45,6 +45,7 @@ const app=express();
     import dashboardRoutes from "./routes/dashboard.routes.js";
     import aiworkoutRoutes from "./routes/aiworkout.routes.js";
     import aimealgenerateRoutes from "./routes/aimealgenerate.routes.js";
+    import waterRoutes from "./routes/water.routes.js";
 
 
     // //using routes
@@ -56,6 +57,7 @@ const app=express();
     app.use("/api/v1/dashboard", dashboardRoutes);
     app.use("/api/v1/ai", aiworkoutRoutes);
     app.use("/api/v1/ai", aimealgenerateRoutes);
+    app.use("/api/v1/water", waterRoutes);
 
 
 app.use(errorHandler);
