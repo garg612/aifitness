@@ -29,10 +29,6 @@ const signup = async ({ fullName, email, password }) => {
     user: user._id,
     gender: "male",
     dob: new Date("1990-01-01"),
-    height: 170,
-    weight: 70,
-    targetWeight: 65,
-    startWeight: 70,
     dietPreference: "Non-Vegetarian",
     goal: "weight_loss",
     activityLevel: "moderate",
@@ -304,14 +300,10 @@ const sociallogin = async ({ email, fullName, provider, providerId }) => {
         user: user._id,
         gender: "male",
         dob: new Date("1990-01-01"),
-        height: 170,
-        weight: 70,
-        targetWeight: 65,
-        startWeight: 70,
         dietPreference: "Non-Vegetarian",
         goal: "weight_loss",
         activityLevel: "moderate",
-  });
+      });
     }
 
     const accessToken=generateAccessToken(user._id);
