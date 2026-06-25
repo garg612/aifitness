@@ -18,6 +18,8 @@ const googleAuthcontroller = asyncHandler(async (req, res) => {
 
   res
     .cookie("refreshToken", refreshToken, cookieOptions)
+    .setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
+    .setHeader("Cross-Origin-Embedder-Policy", "unsafe-none")
     .status(200)
     .json(
       new ApiResponse(200, "Google authentication successful", {

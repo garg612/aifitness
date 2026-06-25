@@ -17,7 +17,8 @@ const app=express();
     app.use(rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutes
         max: 100, // limit each IP to 100 requests per windowMs
-        message: "Too many requests from this IP, please try again later."
+        message: "Too many requests from this IP, please try again later.",
+        validate: { xForwardedForHeader: false }
     }));
     app.use(cookieParser());
     app.use(morgan('common', {
@@ -26,13 +27,15 @@ const app=express();
         }
     }));
     app.use(cors({
-        origin: ["http://localhost:5173"
-            ,"http://localhost:3000",
-            "https://ai-fitness-cilent.netlify.app",
-            "https://sweatstreangth.rest",
-            "http://13.63.236.146:3000"],
+        origin: true,
         credentials: true
     }));
+
+    app.use((req, res, next) => {
+        res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+        res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+        next();
+    });
 
     // Importing routes
     import authRoutes from "./routes/auth.routes.js";
