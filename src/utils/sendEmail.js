@@ -7,7 +7,7 @@ const sendemail=async(options)=>{
     const mailgenerator=new Mailgen({
         theme:"default",
         product:{
-            name:"Sweat&Strength",
+            name:"Sweat&Streangth",
             link:process.env.FRONTEND_URL
         }
     });
@@ -27,7 +27,7 @@ const sendemail=async(options)=>{
     const mail={
         from:{
             name:"Sweat&Strength",
-            address:"donotreply@sweatstrength.rest"
+            address:"donotreply@sweatstreangth.rest"
         },//sender email address
         to:options.email,
         subject:options.subject,
