@@ -6,13 +6,31 @@ import calculateBMI from "../utils/calculateBMI.js";
 const createBMI=async({userId, weight, height})=>{
     const { bmi, category } = calculateBMI(height, weight);
 
-    const record = await BMIRecord.create({
-        user:userId,
-        height,
-        weight,
-        bmi,
-        category
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    let record = await BMIRecord.findOne({
+        user: userId,
+        createdAt: { $gte: startOfDay, $lte: endOfDay }
     });
+
+    if (record) {
+        record.weight = weight;
+        record.height = height;
+        record.bmi = bmi;
+        record.category = category;
+        await record.save();
+    } else {
+        record = await BMIRecord.create({
+            user: userId,
+            height,
+            weight,
+            bmi,
+            category
+        });
+    }
 
     const currentProfile = await UserProfile.findOne({ user: userId });
     const updatePayload = { height, weight };
