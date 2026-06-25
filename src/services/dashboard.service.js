@@ -56,10 +56,10 @@ export const getDashboardService = async (userId) => {
     BMIRecord.findOne({ user: userId })
       .sort({ createdAt: -1 }),
 
-    // Last 7 BMI records for trend graph
+    // Last 30 BMI records for trend graph
     BMIRecord.find({ user: userId })
       .sort({ createdAt: -1 })
-      .limit(7)
+      .limit(30)
       .select("bmi category weight createdAt"),
 
     // Latest workout plan
