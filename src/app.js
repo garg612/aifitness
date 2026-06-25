@@ -26,7 +26,11 @@ const app=express();
         }
     }));
     app.use(cors({
-        origin: ["http://localhost:5173", "https://ai-fitness-cilent.netlify.app"],
+        origin: ["http://localhost:5173"
+            ,"http://localhost:3000",
+            "https://ai-fitness-cilent.netlify.app",
+            "https://sweatstreangth.rest",
+            "http://13.63.236.146:3000"],
         credentials: true
     }));
 
