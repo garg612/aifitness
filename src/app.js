@@ -25,7 +25,7 @@ const app=express();
             write: (message) => logger.http(message.trim())
         }
     }));
-
+    app.set('trust proxy', 1);  // ← add this line
     app.use(cors({
         origin: ["http://localhost:5173", "https://ai-fitness-cilent.netlify.app"],
         credentials: true
