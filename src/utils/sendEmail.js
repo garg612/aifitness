@@ -7,7 +7,7 @@ const sendemail=async(options)=>{
     const mailgenerator=new Mailgen({
         theme:"default",
         product:{
-            name:"AI Fitness App",
+            name:"Sweat&Strength",
             link:process.env.FRONTEND_URL
         }
     });
@@ -25,7 +25,10 @@ const sendemail=async(options)=>{
     })
 
     const mail={
-        from:"mail.taskmanager@example.com",//sender email address
+        from:{
+            name:"Sweat&Strength",
+            address:"donotreply@sweatstrength.rest"
+        },//sender email address
         to:options.email,
         subject:options.subject,
         text:emailtextual,
