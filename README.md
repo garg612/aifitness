@@ -68,10 +68,10 @@ An AI-powered fitness management platform that helps users track their health me
 ## 🏗️ System Architecture
 
 Frontend (React + Vite)
-│
-▼
+  │
+  ▼
 Node.js + Express.js API
-│
+        |
 ┌──────┼──────┐
 ▼      ▼      ▼
 
