@@ -63,6 +63,7 @@ Important instructions:
 - Total calories for each day should be within 100 kcal of ${tdee}
 - Respect the diet preference strictly
 - Include practical ingredients available in India
+- Estimate calories, macronutrients (protein, carbs, fats in grams) and micronutrients (fibre in grams, sugar in grams, sodium in milligrams) for every meal.
 - Return ONLY a valid JSON object. No explanation. No markdown. No extra text. Just raw JSON.
 
 Use exactly this structure:
@@ -79,6 +80,9 @@ Use exactly this structure:
           "protein": 0,
           "carbs": 0,
           "fats": 0,
+          "fibre": 0,
+          "sugar": 0,
+          "sodium": 0,
           "ingredients": ["string"],
           "instructions": "string"
         }
@@ -94,6 +98,9 @@ Use exactly this structure:
           "protein": 0,
           "carbs": 0,
           "fats": 0,
+          "fibre": 0,
+          "sugar": 0,
+          "sodium": 0,
           "ingredients": ["string"],
           "instructions": "string"
         }

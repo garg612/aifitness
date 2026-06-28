@@ -47,6 +47,11 @@ export const getDashboardService = async (userId) => {
     todayWorkoutLogs,
     weeklyWorkoutLogs,
     todayWaterLogs,
+    recentWorkouts,
+    recentMeals,
+    weeklyMealLogsForChart,
+    weeklyWorkoutLogsForChart,
+    weeklyWaterLogsForChart,
   ] = await Promise.all([
 
     // User profile
@@ -101,6 +106,44 @@ export const getDashboardService = async (userId) => {
       user: userId,
       consumedAt: { $gte: start, $lte: end },
     }).sort({ consumedAt: 1 }),
+
+    // Recent 5 Workouts
+    WorkoutLog.find({ user: userId })
+      .sort({ completedAt: -1 })
+      .limit(5)
+      .populate("workout")
+      .lean(),
+
+    // Recent 5 Meals
+    MealLog.find({ user: userId })
+      .sort({ consumedAt: -1 })
+      .limit(5)
+      .populate("mealPlan")
+      .lean(),
+
+    // Weekly Meal Logs for charts
+    MealLog.find({
+      user: userId,
+      consumedAt: {
+        $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      }
+    }).lean(),
+
+    // Weekly Workout Logs for charts
+    WorkoutLog.find({
+      user: userId,
+      completedAt: {
+        $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      }
+    }).lean(),
+
+    // Weekly Water Logs for charts
+    WaterLog.find({
+      user: userId,
+      consumedAt: {
+        $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      }
+    }).lean(),
   ]);
 
   // Validate profile
@@ -362,6 +405,42 @@ export const getDashboardService = async (userId) => {
     };
   }
 
+  // --- Weekly charts data (last 7 days) ---
+  const last7DaysData = [];
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+    const dayStart = new Date(d.setHours(0,0,0,0));
+    const dayEnd = new Date(d.setHours(23,59,59,999));
+    const dayName = daysOfWeek[d.getDay()];
+    const dateString = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+    const dayMeals = weeklyMealLogsForChart.filter(log => log.consumedAt >= dayStart && log.consumedAt <= dayEnd);
+    const dayWorkouts = weeklyWorkoutLogsForChart.filter(log => log.completedAt >= dayStart && log.completedAt <= dayEnd);
+    const dayWater = weeklyWaterLogsForChart.filter(log => log.consumedAt >= dayStart && log.consumedAt <= dayEnd);
+
+    last7DaysData.push({
+      day: dayName,
+      date: dateString,
+      caloriesConsumed: Math.round(dayMeals.reduce((sum, m) => sum + (m.totalCalories || 0), 0)),
+      caloriesBurned: Math.round(dayWorkouts.reduce((sum, w) => sum + (w.caloriesBurned || 0), 0)),
+      waterIntake: dayWater.reduce((sum, w) => sum + (w.amount || 0), 0),
+    });
+  }
+
+  // Format recent workouts & meals
+  const formattedRecentWorkouts = recentWorkouts.map(log => ({
+    ...log,
+    workoutName: log.workoutName || log.workout?.title || "Custom Workout",
+    workoutType: log.workoutType || log.workout?.description || "Strength",
+  }));
+
+  const formattedRecentMeals = recentMeals.map(log => ({
+    ...log,
+    mealName: log.mealName || log.mealPlan?.title || "Custom Meal",
+    mealType: log.mealType || log.mealPlan?.mealType || "lunch",
+  }));
+
   return {
     // Greeting info
     greeting: {
@@ -448,5 +527,10 @@ export const getDashboardService = async (userId) => {
       goal: profile ? (profile.waterGoal || 2000) : 2000,
       totalIntake: todayWaterLogs.reduce((sum, log) => sum + log.amount, 0),
     },
+
+    // Redesigned production additions
+    recentWorkouts: formattedRecentWorkouts,
+    recentMeals: formattedRecentMeals,
+    weeklyChartsData: last7DaysData,
   };
 };

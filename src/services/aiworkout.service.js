@@ -19,7 +19,7 @@ Height: ${profile.height} cm
 Weight: ${profile.weight} kg
 BMI: ${bmi.bmi}
 BMI Category: ${bmi.category}
-Activity Level: ${profile.activityLevel}
+ActivityLevel: ${profile.activityLevel}
 Gender: ${profile.gender}
 Experience: ${profile.experienceLevel}
 
@@ -29,6 +29,9 @@ Use exactly this structure:
 {
   "title": "string",
   "difficulty": "Beginner or Intermediate or Advanced",
+  "goal": "string",
+  "type": "string",
+  "notes": "string",
   "weeklyPlan": [
     {
       "day": "Monday",
@@ -39,8 +42,10 @@ Use exactly this structure:
           "exerciseName": "string",
           "sets": 3,
           "reps": 12,
-          "restSeconds": 60,
-          "caloriesBurned": 50
+          "weight": 0,
+          "restTime": 60,
+          "caloriesBurned": 50,
+          "notes": "string"
         }
       ]
     }
@@ -185,6 +190,9 @@ export const generateWorkoutPlanService = async (userId) => {
     title: data.title || "AI Workout Plan",
     duration,
     difficulty: normalizeDifficulty(data.difficulty),
+    goal: data.goal || profile.goal || "Fitness",
+    type: data.type || "Hybrid",
+    notes: data.notes || "Generated routine notes",
     generatedByAI: true,
     source: "ai-generated",
     weeklyPlan,

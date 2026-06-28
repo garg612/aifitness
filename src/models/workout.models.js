@@ -50,6 +50,36 @@ const workoutSchema = new mongoose.Schema(
         type: Array,
         default: [],
     },
+    goal: {
+      type: String,
+      default: "",
+    },
+    type: {
+      type: String,
+      default: "Strength",
+    },
+    notes: {
+      type: String,
+      default: "",
+    },
+    date: {
+      type: Date,
+      default: Date.now,
+    },
+    exercises: {
+      type: [
+        {
+          exerciseName: { type: String, required: true },
+          sets: { type: Number, default: 0 },
+          reps: { type: Number, default: 0 },
+          weight: { type: Number, default: 0 },
+          restTime: { type: Number, default: 0 },
+          caloriesBurned: { type: Number, default: 0 },
+          notes: { type: String, default: "" },
+        }
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,
