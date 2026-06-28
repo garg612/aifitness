@@ -168,6 +168,7 @@ export const getDashboardService = async (userId) => {
     const todayPlan = latestMealPlan.weeklyPlan.find((day) => day.day === todayName);
     todaysMeal = todayPlan
       ? {
+          mealPlanId: latestMealPlan._id,
           day: todayPlan.day,
           meals: todayPlan.meals || [],
           dailyCalorieTarget: latestMealPlan.dailyCalorieTarget,
@@ -177,6 +178,7 @@ export const getDashboardService = async (userId) => {
       : null;
   } else if (latestMealPlan?.meals?.length > 0) {
     todaysMeal = {
+      mealPlanId: latestMealPlan._id,
       day: todayName,
       meals: latestMealPlan.meals,
       dailyCalorieTarget: latestMealPlan.dailyCalorieTarget,
@@ -471,6 +473,7 @@ export const getDashboardService = async (userId) => {
     // Today's workout from weekly plan
     todaysWorkout: todaysWorkout
       ? {
+          workoutId: latestWorkout._id,
           day: todaysWorkout.day,
           focus: todaysWorkout.focus,
           isRestDay: todaysWorkout.isRestDay,
