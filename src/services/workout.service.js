@@ -192,6 +192,13 @@ const logWorkout = async ({ userId, workoutId, duration, caloriesBurned }) => {
     }
 
     let exercises = workout.exercises || [];
+    if (workout.generatedByAI && workout.weeklyPlan?.length > 0) {
+        const todayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
+        const todayPlan = workout.weeklyPlan.find(day => day.day === todayName);
+        if (todayPlan && !todayPlan.isRestDay) {
+            exercises = todayPlan.exercises || [];
+        }
+    }
     if (exercises.length === 0) {
         exercises = await Exercise.find({ workout: workoutId }).lean();
     }
@@ -210,7 +217,7 @@ const logWorkout = async ({ userId, workoutId, duration, caloriesBurned }) => {
         caloriesBurned: Number(caloriesBurned) || exercises.reduce((sum, e) => sum + (e.caloriesBurned || 0), 0) || 300,
         completedAt: new Date(),
         exercises: exercises.map(e => ({
-          exerciseName: e.exerciseName,
+          exerciseName: e.exerciseName || e.name,
           sets: e.sets || 0,
           reps: e.reps || 0,
           weight: e.weight || 0,
